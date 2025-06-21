@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:c58231db3c166544cd2ac7d159f9c6a29543d751076b594366a7928b67313252"
+content_hash = "sha256:e4967598d37703b44a2ceea72e6e3c71918201dce1878f5224a420c4eb00dec9"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -1017,7 +1017,7 @@ files = [
 
 [[package]]
 name = "jupyterlab"
-version = "4.4.2"
+version = "4.4.3"
 requires_python = ">=3.9"
 summary = "JupyterLab computational environment"
 groups = ["default"]
@@ -1039,8 +1039,8 @@ dependencies = [
     "traitlets",
 ]
 files = [
-    {file = "jupyterlab-4.4.2-py3-none-any.whl", hash = "sha256:857111a50bed68542bf55dca784522fe728f9f88b4fe69e8c585db5c50900419"},
-    {file = "jupyterlab-4.4.2.tar.gz", hash = "sha256:afa9caf28c0cb966488be18e5e8daba9f018a1c4273a406b7d5006344cbc6d16"},
+    {file = "jupyterlab-4.4.3-py3-none-any.whl", hash = "sha256:164302f6d4b6c44773dfc38d585665a4db401a16e5296c37df5cba63904fbdea"},
+    {file = "jupyterlab-4.4.3.tar.gz", hash = "sha256:a94c32fd7f8b93e82a49dc70a6ec45a5c18281ca2a7228d12765e4e210e5bca2"},
 ]
 
 [[package]]
@@ -1113,18 +1113,18 @@ files = [
 
 [[package]]
 name = "llama-index"
-version = "0.12.36"
+version = "0.12.41"
 requires_python = "<4.0,>=3.9"
 summary = "Interface between LLMs and your data"
 groups = ["default"]
 dependencies = [
     "llama-index-agent-openai<0.5,>=0.4.0",
-    "llama-index-cli<0.5,>=0.4.1",
-    "llama-index-core<0.13,>=0.12.36",
+    "llama-index-cli<0.5,>=0.4.2",
+    "llama-index-core<0.13,>=0.12.41",
     "llama-index-embeddings-openai<0.4,>=0.3.0",
     "llama-index-indices-managed-llama-cloud>=0.4.0",
-    "llama-index-llms-openai<0.4,>=0.3.0",
-    "llama-index-multi-modal-llms-openai<0.5,>=0.4.0",
+    "llama-index-llms-openai<0.5,>=0.4.0",
+    "llama-index-multi-modal-llms-openai<0.6,>=0.5.0",
     "llama-index-program-openai<0.4,>=0.3.0",
     "llama-index-question-gen-openai<0.4,>=0.3.0",
     "llama-index-readers-file<0.5,>=0.4.0",
@@ -1132,45 +1132,45 @@ dependencies = [
     "nltk>3.8.1",
 ]
 files = [
-    {file = "llama_index-0.12.36-py3-none-any.whl", hash = "sha256:08bfa41c274672fe5aa4bafa6a6cbda4344141c4aa42517d842a5daf94ffcfe5"},
-    {file = "llama_index-0.12.36.tar.gz", hash = "sha256:3f0c4f0d1478c9f136760ef2bce65f03fa21a0a7402b537bcccbedf0ab7387bf"},
+    {file = "llama_index-0.12.41-py3-none-any.whl", hash = "sha256:09bfc886e6273c82478aacc21e9a68f57c878e1b09f0c1e72adb09ceded18a8e"},
+    {file = "llama_index-0.12.41.tar.gz", hash = "sha256:0ab5e1b188c0e9c660d20ae525493870e20dde84af8398df67a2d55da3a6f09b"},
 ]
 
 [[package]]
 name = "llama-index-agent-openai"
-version = "0.4.7"
+version = "0.4.9"
 requires_python = "<4.0,>=3.9"
 summary = "llama-index agent openai integration"
 groups = ["default"]
 dependencies = [
     "llama-index-core<0.13,>=0.12.18",
-    "llama-index-llms-openai<0.4,>=0.3.0",
+    "llama-index-llms-openai<0.5,>=0.4.0",
     "openai>=1.14.0",
 ]
 files = [
-    {file = "llama_index_agent_openai-0.4.7-py3-none-any.whl", hash = "sha256:2c114a3f451fd96bf1a7034ad3982854ec90485000c142a81193c6aee69ab650"},
-    {file = "llama_index_agent_openai-0.4.7.tar.gz", hash = "sha256:fb1bbab1f0a423309503641a2ced8dc1ae6c07d5a898b4f716de0db995746e0d"},
+    {file = "llama_index_agent_openai-0.4.9-py3-none-any.whl", hash = "sha256:d696b014ef5652cdae3fe934cc2146fb05ffa978a242d432a2ae895524935c20"},
+    {file = "llama_index_agent_openai-0.4.9.tar.gz", hash = "sha256:153cc0f49dcaa0cc44795e2d3ea20efb7dd1251368c0d7704a6e26aac6611c9d"},
 ]
 
 [[package]]
 name = "llama-index-cli"
-version = "0.4.1"
+version = "0.4.3"
 requires_python = "<4.0,>=3.9"
 summary = "llama-index cli"
 groups = ["default"]
 dependencies = [
-    "llama-index-core<0.13.0,>=0.12.0",
-    "llama-index-embeddings-openai<0.4.0,>=0.3.0",
-    "llama-index-llms-openai<0.4.0,>=0.3.0",
+    "llama-index-core<0.13,>=0.12.0",
+    "llama-index-embeddings-openai<0.4,>=0.3.1",
+    "llama-index-llms-openai<0.5,>=0.4.0",
 ]
 files = [
-    {file = "llama_index_cli-0.4.1-py3-none-any.whl", hash = "sha256:6dfc931aea5b90c256e476b48dfac76f48fb2308fdf656bb02ee1e4f2cab8b06"},
-    {file = "llama_index_cli-0.4.1.tar.gz", hash = "sha256:3f97f1f8f5f401dfb5b6bc7170717c176dcd981538017430073ef12ffdcbddfa"},
+    {file = "llama_index_cli-0.4.3-py3-none-any.whl", hash = "sha256:f0af55ce4b90e5a2466e394b88f4ac6085ea3e6286019bc3f49de6673ce2238d"},
+    {file = "llama_index_cli-0.4.3.tar.gz", hash = "sha256:dae8183a10551bbd89686b94ed294a6cf44633c3dd6285c4f991c85031b7a55f"},
 ]
 
 [[package]]
 name = "llama-index-core"
-version = "0.12.36"
+version = "0.12.41"
 requires_python = "<4.0,>=3.9"
 summary = "Interface between LLMs and your data"
 groups = ["default"]
@@ -1202,8 +1202,8 @@ dependencies = [
     "wrapt",
 ]
 files = [
-    {file = "llama_index_core-0.12.36-py3-none-any.whl", hash = "sha256:17bc5174e4acc2650c1638eda63635c1293660bb6a50743d39979d131c8d8c92"},
-    {file = "llama_index_core-0.12.36.tar.gz", hash = "sha256:03160629ea1a3da5ed543f0b9fb28c2fcded18702adf2a682a208c1c48e0d0ba"},
+    {file = "llama_index_core-0.12.41-py3-none-any.whl", hash = "sha256:61fc1e912303250ee32778d5db566e242f7bd9ee043940860a436e3c93f17ef5"},
+    {file = "llama_index_core-0.12.41.tar.gz", hash = "sha256:34f77c51b12b11ee1d743ff183c1b61afe2975f9970357723a744d4e080f5b3d"},
 ]
 
 [[package]]
@@ -1238,64 +1238,64 @@ files = [
 
 [[package]]
 name = "llama-index-llms-openai"
-version = "0.3.40"
+version = "0.4.4"
 requires_python = "<4.0,>=3.9"
 summary = "llama-index llms openai integration"
 groups = ["default"]
 dependencies = [
-    "llama-index-core<0.13,>=0.12.36",
-    "openai<2,>=1.66.3",
+    "llama-index-core<0.13,>=0.12.41",
+    "openai<2,>=1.81.0",
 ]
 files = [
-    {file = "llama_index_llms_openai-0.3.40-py3-none-any.whl", hash = "sha256:6b3177ebee1151c87e786d5a668ac11fced1f2de1d16e90f3aa39127027d9d4c"},
-    {file = "llama_index_llms_openai-0.3.40.tar.gz", hash = "sha256:a162fdb89d24be584718c5052c9d4ce480ad3a43486ad1d836a2e6bd0e0bdd89"},
+    {file = "llama_index_llms_openai-0.4.4-py3-none-any.whl", hash = "sha256:b3e4505b9c7a7ef1cb02353f9e79465169f00b45f20d882773d8f206f92e8e04"},
+    {file = "llama_index_llms_openai-0.4.4.tar.gz", hash = "sha256:5d3b96e4c9886effb44489a05eb824d7277e98e56e24bfbb8656cd42c4f0aa0a"},
 ]
 
 [[package]]
 name = "llama-index-multi-modal-llms-openai"
-version = "0.4.3"
+version = "0.5.1"
 requires_python = "<4.0,>=3.9"
 summary = "llama-index multi-modal-llms openai integration"
 groups = ["default"]
 dependencies = [
-    "llama-index-core<0.13.0,>=0.12.3",
-    "llama-index-llms-openai<0.4.0,>=0.3.0",
+    "llama-index-core<0.13,>=0.12.3",
+    "llama-index-llms-openai<0.5,>=0.4.0",
 ]
 files = [
-    {file = "llama_index_multi_modal_llms_openai-0.4.3-py3-none-any.whl", hash = "sha256:1ceb42716472ac8bd5130afa29b793869d367946aedd02e48a3b03184e443ad1"},
-    {file = "llama_index_multi_modal_llms_openai-0.4.3.tar.gz", hash = "sha256:5e6ca54069d3d18c2f5f7ca34f3720fba1d1b9126482ad38feb0c858f4feb63b"},
+    {file = "llama_index_multi_modal_llms_openai-0.5.1-py3-none-any.whl", hash = "sha256:69bb9c310c323ce51038f0d40719f546d0d4e0853835a4f5cfa21f07dbb0b91e"},
+    {file = "llama_index_multi_modal_llms_openai-0.5.1.tar.gz", hash = "sha256:df3aff00c36023c5f8c49f972a325f71823ed0f4dd9cd479955d76afc146575f"},
 ]
 
 [[package]]
 name = "llama-index-program-openai"
-version = "0.3.1"
+version = "0.3.2"
 requires_python = "<4.0,>=3.9"
 summary = "llama-index program openai integration"
 groups = ["default"]
 dependencies = [
-    "llama-index-agent-openai<0.5.0,>=0.4.0",
-    "llama-index-core<0.13.0,>=0.12.0",
-    "llama-index-llms-openai<0.4.0,>=0.3.0",
+    "llama-index-agent-openai<0.5,>=0.4.0",
+    "llama-index-core<0.13,>=0.12.0",
+    "llama-index-llms-openai<0.5,>=0.4.0",
 ]
 files = [
-    {file = "llama_index_program_openai-0.3.1-py3-none-any.whl", hash = "sha256:93646937395dc5318fd095153d2f91bd632b25215d013d14a87c088887d205f9"},
-    {file = "llama_index_program_openai-0.3.1.tar.gz", hash = "sha256:6039a6cdbff62c6388c07e82a157fe2edd3bbef0c5adf292ad8546bf4ec75b82"},
+    {file = "llama_index_program_openai-0.3.2-py3-none-any.whl", hash = "sha256:451829ae53e074e7b47dcc60a9dd155fcf9d1dcbc1754074bdadd6aab4ceb9aa"},
+    {file = "llama_index_program_openai-0.3.2.tar.gz", hash = "sha256:04c959a2e616489894bd2eeebb99500d6f1c17d588c3da0ddc75ebd3eb7451ee"},
 ]
 
 [[package]]
 name = "llama-index-question-gen-openai"
-version = "0.3.0"
+version = "0.3.1"
 requires_python = "<4.0,>=3.9"
 summary = "llama-index question_gen openai integration"
 groups = ["default"]
 dependencies = [
-    "llama-index-core<0.13.0,>=0.12.0",
-    "llama-index-llms-openai<0.4.0,>=0.3.0",
-    "llama-index-program-openai<0.4.0,>=0.3.0",
+    "llama-index-core<0.13,>=0.12.0",
+    "llama-index-llms-openai<0.5,>=0.4.0",
+    "llama-index-program-openai<0.4,>=0.3.0",
 ]
 files = [
-    {file = "llama_index_question_gen_openai-0.3.0-py3-none-any.whl", hash = "sha256:9b60ec114273a63b50349948666e5744a8f58acb645824e07c979041e8fec598"},
-    {file = "llama_index_question_gen_openai-0.3.0.tar.gz", hash = "sha256:efd3b468232808e9d3474670aaeab00e41b90f75f52d0c9bfbf11207e0963d62"},
+    {file = "llama_index_question_gen_openai-0.3.1-py3-none-any.whl", hash = "sha256:1ce266f6c8373fc8d884ff83a44dfbacecde2301785db7144872db51b8b99429"},
+    {file = "llama_index_question_gen_openai-0.3.1.tar.gz", hash = "sha256:5e9311b433cc2581ff8a531fa19fb3aa21815baff75aaacdef11760ac9522aa9"},
 ]
 
 [[package]]
@@ -1552,20 +1552,20 @@ files = [
 
 [[package]]
 name = "notebook"
-version = "7.4.2"
+version = "7.4.3"
 requires_python = ">=3.8"
 summary = "Jupyter Notebook - A web-based notebook environment for interactive computing"
 groups = ["default"]
 dependencies = [
     "jupyter-server<3,>=2.4.0",
     "jupyterlab-server<3,>=2.27.1",
-    "jupyterlab<4.5,>=4.4.0",
+    "jupyterlab<4.5,>=4.4.3",
     "notebook-shim<0.3,>=0.2",
     "tornado>=6.2.0",
 ]
 files = [
-    {file = "notebook-7.4.2-py3-none-any.whl", hash = "sha256:9ccef602721aaa5530852e3064710b8ae5415c4e2ce26f8896d0433222755259"},
-    {file = "notebook-7.4.2.tar.gz", hash = "sha256:e739defd28c3f615a6bfb0a2564bd75018a9cc6613aa00bbd9c15e68eed2de1b"},
+    {file = "notebook-7.4.3-py3-none-any.whl", hash = "sha256:9cdeee954e04101cadb195d90e2ab62b7c9286c1d4f858bf3bb54e40df16c0c3"},
+    {file = "notebook-7.4.3.tar.gz", hash = "sha256:a1567481cd3853f2610ee0ecf5dfa12bb508e878ee8f92152c134ef7f0568a76"},
 ]
 
 [[package]]
@@ -1604,7 +1604,7 @@ files = [
 
 [[package]]
 name = "openai"
-version = "1.79.0"
+version = "1.85.0"
 requires_python = ">=3.8"
 summary = "The official Python library for the openai API"
 groups = ["default"]
@@ -1619,8 +1619,8 @@ dependencies = [
     "typing-extensions<5,>=4.11",
 ]
 files = [
-    {file = "openai-1.79.0-py3-none-any.whl", hash = "sha256:d5050b92d5ef83f869cb8dcd0aca0b2291c3413412500eec40c66981b3966992"},
-    {file = "openai-1.79.0.tar.gz", hash = "sha256:e3b627aa82858d3e42d16616edc22aa9f7477ee5eb3e6819e9f44a961d899a4c"},
+    {file = "openai-1.85.0-py3-none-any.whl", hash = "sha256:7dc3e839cb8bb8747979a90c63ad4cb25a8e0cbec17b53eec009532c9965cecf"},
+    {file = "openai-1.85.0.tar.gz", hash = "sha256:6ba76e4ebc5725f71f2f6126c7cb5169ca8de60dd5aa61f350f9448ad162c913"},
 ]
 
 [[package]]

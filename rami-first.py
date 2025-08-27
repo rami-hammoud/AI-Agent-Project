@@ -41,7 +41,6 @@ def main():
                 crawler.do_action('turn right',1,speed)
             sleep(0.05)
             show_info()
-            continue
         if key == "q":
             flag_bgm = not flag_bgm
             if flag_bgm is True:

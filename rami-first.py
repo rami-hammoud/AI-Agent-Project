@@ -1,28 +1,75 @@
-from picrawler import Picrawler
-from time import sleep
+'''
+    Sorry, currently there is only sound when running with sudo
+'''
 
-crawler = Picrawler()
+from time import sleep
+from robot_hat import Music,TTS
+
+music = Music()
+tts = TTS()
+
+manual = '''
+Input key to call the function!
+    q: Play background music
+    1: Play sound effect
+    2: Play sound effect with threads
+    t: Text to speak
+
+    Ctrl^C: quit
+'''
 
 def main():
+    print(manual)
 
-    speed = 80
+    flag_bgm = False
+    music.music_set_volume(20)
+    tts.lang("en-US")
+
 
     while True:
+        key = input()
+        key = key.lower()
 
-        crawler.do_action('forward',2,speed)
-        sleep(0.05)
-        crawler.do_action('backward',2,speed)
-        sleep(0.05)
-        crawler.do_action('turn left',2,speed)
-        sleep(0.05)
-        crawler.do_action('turn right',2,speed)
-        sleep(0.05)
-        crawler.do_action('turn left angle',2,speed)
-        sleep(0.05)
-        crawler.do_action('turn right angle',2,speed)
-        sleep(0.05)
-        crawler.do_step('stand',speed)
-        sleep(1)
+        if key in('wsad'):
+            if 'w' == key:
+                crawler.do_action('forward',1,speed)
+            elif 's' == key:
+                crawler.do_action('backward',1,speed)
+            elif 'a' == key:
+                crawler.do_action('turn left',1,speed)
+            elif 'd' == key:
+                crawler.do_action('turn right',1,speed)
+            sleep(0.05)
+            show_info()
+            continue
+        if key == "q":
+            flag_bgm = not flag_bgm
+            if flag_bgm is True:
+                music.music_play('./musics/sports-Ahjay_Stelino.mp3')
+            else:
+                music.music_stop()
+
+
+
+        elif key == "1":
+            music.sound_play('./sounds/talk1.wav')
+            sleep(0.05)
+            music.sound_play('./sounds/talk3.wav')
+            sleep(0.05)
+            music.sound_play('./sounds/sign.wav')
+            sleep(0.5)
+
+        elif key =="2":
+            music.sound_play_threading('./sounds/talk1.wav')
+            sleep(0.05)
+            music.sound_play_threading('./sounds/talk3.wav')
+            sleep(0.05)
+            music.sound_play_threading('./sounds/sign.wav')
+            sleep(0.5)
+
+        elif key == "t":
+            words = "Hello"
+            tts.say(words)
 
 if __name__ == "__main__":
     main()

@@ -8,6 +8,14 @@ from robot_hat import Music,TTS
 music = Music()
 tts = TTS()
 
+
+from picrawler import Picrawler
+from time import sleep
+import readchar
+
+crawler = Picrawler() 
+speed = 90
+
 manual = '''
 Input key to call the function!
     q: Play background music
@@ -30,23 +38,26 @@ def main():
         key = input()
         key = key.lower()
 
-        if key in('wsad'):
-            if 'w' == key:
-                crawler.do_action('forward',1,speed)
-            elif 's' == key:
-                crawler.do_action('backward',1,speed)
-            elif 'a' == key:
-                crawler.do_action('turn left',1,speed)
-            elif 'd' == key:
-                crawler.do_action('turn right',1,speed)
-            sleep(0.05)
+        
         if key == "q":
             flag_bgm = not flag_bgm
             if flag_bgm is True:
                 music.music_play('./musics/sports-Ahjay_Stelino.mp3')
             else:
                 music.music_stop()
-
+            while True:
+                key = readchar.readkey()
+                key = key.lower()
+                if key in('wsad'):
+                    if 'w' == key:
+                        crawler.do_action('forward',1,speed)
+                    elif 's' == key:
+                        crawler.do_action('backward',1,speed)
+                    elif 'a' == key:
+                        crawler.do_action('turn left',1,speed)
+                    elif 'd' == key:
+                        crawler.do_action('turn right',1,speed)
+                    sleep(0.05)
 
 
         elif key == "1":

@@ -1,99 +1,156 @@
-#!/usr/bin/env python3
-import time, os, sys
-import numpy as np
+from vilib import Vilib
+from time import sleep, time, strftime, localtime
+import threading
+from os import getlogin
+import cv2
 
-def save_png_bgr(path, arr_bgr):
-    # Minimal PNG writer via OpenCV without imshow requirements
-    import cv2
-    cv2.imwrite(path, arr_bgr)
+USERNAME = getlogin()
+PICTURE_PATH = f"/home/{USERNAME}/Pictures/"
 
-def summarize(tag, img, space):
-    # img is array with 3 channels; `space` is a label like "RGB" or "BGR"
-    means = img.reshape(-1, 3).mean(axis=0)
-    print(f"[{tag}] {space} means: [{means[0]:.1f}, {means[1]:.1f}, {means[2]:.1f}]")
-    return means
+flag_face = False
+flag_color = False
+qr_code_flag = False
 
-def run_picamera2():
-    from picamera2 import Picamera2
-    import cv2
+MANUAL = '''
+Input key to call the function!
+    q: Take photo
+    1: Color detect : red
+    2: Color detect : orange
+    3: Color detect : yellow
+    4: Color detect : green
+    5: Color detect : blue
+    6: Color detect : purple
+    0: Switch off Color detect
+    r: Scan the QR code
+    f: Switch ON/OFF face detect
+    s: Display detected object information
+'''
 
-    os.makedirs("diag_out", exist_ok=True)
+color_list = ['close', 'red', 'orange', 'yellow',
+              'green', 'blue', 'purple']
 
-    picam2 = Picamera2()
-    config = picam2.create_preview_configuration(
-        main={"size": (1280, 720), "format": "RGB888"}
-    )
-    picam2.configure(config)
 
-    # Start in Auto WB
-    try:
-        picam2.set_controls({"AwbEnable": True})
-    except Exception:
-        pass
+def face_detect(flag):
+    print("Face Detect:" + str(flag))
+    Vilib.face_detect_switch(flag)
 
-    picam2.start()
-    time.sleep(0.6)
 
-    # capture one frame on Auto WB
-    frame_rgb = picam2.capture_array()  # RGB
-    if frame_rgb is None:
-        print("Failed to capture frame.")
-        sys.exit(1)
+def qrcode_detect():
+    global qr_code_flag
+    if qr_code_flag:
+        Vilib.qrcode_detect_switch(True)
+        print("Waiting for QR code")
 
-    # Save both RGB→BGR view and raw-as-saved
-    rgb_means = summarize("AUTO", frame_rgb, "RGB")
+    text = None
+    while qr_code_flag:
+        temp = Vilib.detect_obj_parameter['qr_data']
+        if temp != "None" and temp != text:
+            text = temp
+            print('QR code:%s' % text)
+        sleep(0.5)
+    Vilib.qrcode_detect_switch(False)
 
-    # What it will look like in typical OpenCV display/saves (BGR):
-    import cv2
-    bgr_view = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)
-    summarize("AUTO", bgr_view, "BGR view")
-    save_png_bgr("diag_out/auto_bgr.png", bgr_view)
 
-    # Try manual gains to see if color shifts fix the blue issue
-    gains_list = [
-        (1.0, 1.0),   # neutral
-        (1.5, 1.0),   # boost red
-        (2.0, 1.2),   # stronger red
-        (1.0, 1.5),   # boost blue
-        (1.2, 2.0),   # stronger blue
-    ]
+def take_photo():
+    _time = strftime('%Y-%m-%d-%H-%M-%S', localtime(time()))
+    name = 'photo_%s' % _time
+    # Grab a frame directly, fix colors, and save
+    frame = Vilib.frame_array()
+    if frame is not None:
+        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(f"{PICTURE_PATH}{name}.jpg", frame_bgr)
+        print(f'photo saved as {PICTURE_PATH}{name}.jpg')
+    else:
+        print("Error: could not capture photo")
 
-    # Disable Auto WB and sweep gains
-    try:
-        picam2.set_controls({"AwbEnable": False})
-        print("Auto WB OFF; testing manual ColourGains...")
-        for idx, g in enumerate(gains_list):
-            try:
-                picam2.set_controls({"ColourGains": g})
-            except Exception as e:
-                print("Failed to set ColourGains:", e)
-                break
-            time.sleep(0.25)
-            frame_rgb = picam2.capture_array()
-            summarize(f"MANUAL g={g}", frame_rgb, "RGB")
-            bgr_view = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)
-            summarize(f"MANUAL g={g}", bgr_view, "BGR view")
-            save_png_bgr(f"diag_out/manual_g{g[0]}_{g[1]}.png", bgr_view)
-    except Exception as e:
-        print("Could not disable AWB / set gains:", e)
 
-    # restore Auto WB
-    try:
-        picam2.set_controls({"AwbEnable": True})
-    except Exception:
-        pass
+def object_show():
+    global flag_color, flag_face
 
-    picam2.stop()
-    print("\nSaved images in ./diag_out/")
-    print("Files:")
-    for f in sorted(os.listdir("diag_out")):
-        print(" - diag_out/" + f)
+    if flag_color:
+        if Vilib.detect_obj_parameter['color_n'] == 0:
+            print('Color Detect: None')
+        else:
+            color_coodinate = (Vilib.detect_obj_parameter['color_x'],
+                               Vilib.detect_obj_parameter['color_y'])
+            color_size = (Vilib.detect_obj_parameter['color_w'],
+                          Vilib.detect_obj_parameter['color_h'])
+            print("[Color Detect] ", "Coordinate:", color_coodinate, "Size", color_size)
+
+    if flag_face:
+        if Vilib.detect_obj_parameter['human_n'] == 0:
+            print('Face Detect: None')
+        else:
+            human_coodinate = (Vilib.detect_obj_parameter['human_x'],
+                               Vilib.detect_obj_parameter['human_y'])
+            human_size = (Vilib.detect_obj_parameter['human_w'],
+                          Vilib.detect_obj_parameter['human_h'])
+            print("[Face Detect] ", "Coordinate:", human_coodinate, "Size", human_size)
+
+
+# 🔧 Fix color swap for local display
+def fixed_frame_display(img):
+    if img is None:
+        return None
+    return cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+
+# 🔧 Fix color swap for web streaming
+def fixed_web_frame(img):
+    if img is None:
+        return None
+    img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    ret, jpeg = cv2.imencode('.jpg', img_bgr)
+    if ret:
+        return jpeg.tobytes()
+    return None
+
+
+# Apply patches
+Vilib.frame_display = fixed_frame_display
+Vilib.web_frame_display = fixed_web_frame
+
+
+def main():
+    global flag_face, flag_color, qr_code_flag
+    qrcode_thread = None
+
+    Vilib.camera_start(vflip=False, hflip=False)
+    Vilib.display(local=True, web=True)   # now uses patched functions
+    print(MANUAL)
+
+    while True:
+        key = input().lower()
+
+        if key == 'q':
+            take_photo()
+        elif key in ('0123456'):
+            index = int(key)
+            if index == 0:
+                flag_color = False
+                Vilib.color_detect('close')
+            else:
+                flag_color = True
+                Vilib.color_detect(color_list[index])
+            print('Color detect : %s' % color_list[index])
+        elif key == "f":
+            flag_face = not flag_face
+            face_detect(flag_face)
+        elif key == "r":
+            qr_code_flag = not qr_code_flag
+            if qr_code_flag:
+                if qrcode_thread is None or not qrcode_thread.is_alive():
+                    qrcode_thread = threading.Thread(target=qrcode_detect, daemon=True)
+                    qrcode_thread.start()
+            else:
+                if qrcode_thread and qrcode_thread.is_alive():
+                    qrcode_thread.join()
+                    print('QRcode Detect: close')
+        elif key == "s":
+            object_show()
+
+        sleep(0.5)
+
 
 if __name__ == "__main__":
-    try:
-        from picamera2 import Picamera2  # check availability
-        run_picamera2()
-    except Exception as e:
-        print("PiCamera2 failed:", e)
-        print("Tip: ensure 'python3-picamera2' is installed and camera is enabled.")
-        sys.exit(1)
+    main()

@@ -2,8 +2,8 @@
 """
 cam_headless_diag_v2.py — Headless camera color diagnostic (single Picamera2 session)
 
-- Opens PiCamera2 ONCE, captures AUTO-WB, then (optionally) sweeps manual ColourGains.
-- Saves BGR PNGs and writes a summary report in a timestamped folder.
+- Opens PiCamera2 ONCE, captures an AUTO-WB frame, then (optionally) sweeps manual ColourGains.
+- Saves BGR PNGs and writes summary files in a timestamped folder.
 - Works over SSH; no GUI needed.
 
 Usage:
@@ -12,31 +12,44 @@ Usage:
   python3 cam_headless_diag_v2.py --no-sweep --vflip --hflip
 """
 
-import os, sys, time, json, argparse
+import os
+import sys
+import time
+import json
+import argparse
 from datetime import datetime
+
 import numpy as np
 
-def now_stamp():
+
+def now_stamp() -> str:
     return datetime.now().strftime("%Y%m%d_%H%M%S")
 
-def ensure_outdir(base="diag_out"):
+
+def ensure_outdir(base: str = "diag_out") -> str:
     d = os.path.join(base, now_stamp())
     os.makedirs(d, exist_ok=True)
     return d
 
-def to_bgr(img_rgb):
+
+def to_bgr(img_rgb: np.ndarray) -> np.ndarray:
+    # RGB -> BGR without needing cv2.cvtColor
     return img_rgb[..., ::-1]
 
-def save_png_bgr(path, bgr):
-    import cv2
-    cv2.imwrite(path, bgr)
 
-def stats_rgb(img_rgb):
+def save_png_bgr(path: str, bgr: np.ndarray) -> None:
+    import cv2
+    ok = cv2.imwrite(path, bgr)
+    if not ok:
+        raise RuntimeError(f"cv2.imwrite failed for: {path}")
+
+
+def stats_rgb(img_rgb: np.ndarray) -> dict:
     arr = img_rgb.reshape(-1, 3).astype(np.float32)
     means = arr.mean(axis=0)  # [R,G,B]
-    stds  = arr.std(axis=0)
+    stds = arr.std(axis=0)
     ratios = means / (means.mean() + 1e-6)
-    dominant = ["R","G","B"][int(np.argmax(means))]
+    dominant = ["R", "G", "B"][int(np.argmax(means))]
     return {
         "means_rgb": means.tolist(),
         "stds_rgb": stds.tolist(),
@@ -44,18 +57,22 @@ def stats_rgb(img_rgb):
         "dominant": dominant,
     }
 
-def verdict_from_stats(s):
-    r,g,b = s["means_rgb"]
-    if b > 1.4 * max(r,g):
+
+def verdict_from_stats(s: dict) -> str:
+    r, g, b = s["means_rgb"]
+    if b > 1.4 * max(r, g):
         return "Blue >> others — likely AWB/gains issue."
-    if r > 1.4 * max(g,b):
+    if r > 1.4 * max(g, b):
         return "Red >> others — warm scene or gains skew."
     return "Channels look reasonably balanced."
 
-def init_picam2(width, height, awb=True):
+
+def init_picam2(width: int, height: int, awb: bool = True):
     from picamera2 import Picamera2
     picam2 = Picamera2()
-    cfg = picam2.create_preview_configuration(main={"size": (width, height), "format": "RGB888"})
+    cfg = picam2.create_preview_configuration(
+        main={"size": (width, height), "format": "RGB888"}
+    )
     picam2.configure(cfg)
     try:
         picam2.set_controls({"AwbEnable": bool(awb)})
@@ -65,7 +82,8 @@ def init_picam2(width, height, awb=True):
     time.sleep(0.5)
     return picam2
 
-def capture_rgb(picam2, vflip=False, hflip=False):
+
+def capture_rgb(picam2, vflip: bool = False, hflip: bool = False) -> np.ndarray | None:
     frame = picam2.capture_array()  # RGB888
     if frame is None:
         return None
@@ -75,13 +93,18 @@ def capture_rgb(picam2, vflip=False, hflip=False):
         frame = np.fliplr(frame)
     return frame
 
+
 def main():
-    ap = argparse.ArgumentParser(description="Headless camera color diagnostic (single Picamera2 session)")
-    ap.add_argument("--width",  type=int, default=1280)
+    ap = argparse.ArgumentParser(
+        description="Headless camera color diagnostic (single Picamera2 session)"
+    )
+    ap.add_argument("--width", type=int, default=1280)
     ap.add_argument("--height", type=int, default=720)
     ap.add_argument("--vflip", action="store_true")
     ap.add_argument("--hflip", action="store_true")
-    ap.add_argument("--sweep", action="store_true", help="Sweep manual ColourGains with AWB OFF")
+    ap.add_argument(
+        "--sweep", action="store_true", help="Sweep manual ColourGains with AWB OFF"
+    )
     ap.add_argument("--no-sweep", dest="sweep", action="store_false")
     ap.set_defaults(sweep=True)
     args = ap.parse_args()
@@ -89,9 +112,9 @@ def main():
     outdir = ensure_outdir()
     print(f"[diag] Output directory: {outdir}")
 
-    # Ensure nothing else is using the camera (close PiCrawler/Vilib if running).
+    # Ensure PiCamera2 is available
     try:
-        from picamera2 import Picamera2  # just to check availability
+        from picamera2 import Picamera2  # noqa: F401
     except Exception as e:
         print("[error] PiCamera2 not available:", e)
         sys.exit(1)
@@ -103,8 +126,8 @@ def main():
         print("[error] Failed to open camera:", e)
         sys.exit(1)
 
-    files = []
-    summary = {
+    files: list[str] = []
+    summary: dict = {
         "backend": "picamera2",
         "width": args.width,
         "height": args.height,
@@ -113,11 +136,12 @@ def main():
         "files": files,
     }
 
-    # AUTO WB capture
+    # === AUTO WB capture ===
     rgb = capture_rgb(picam2, args.vflip, args.hflip)
     if rgb is None:
         print("[error] Failed to capture AUTO frame")
-        picam2.stop(); sys.exit(1)
+        picam2.stop()
+        sys.exit(1)
 
     bgr = to_bgr(rgb)
     auto_path = os.path.join(outdir, "auto_bgr.png")
@@ -131,7 +155,7 @@ def main():
     summary["auto_stats"] = s_auto
     summary["auto_verdict"] = v_auto
 
-    # Optional manual sweep — reuse the SAME camera; just toggle controls
+    # === Optional manual sweep — reuse SAME camera; just toggle controls ===
     if args.sweep:
         print("\n[diag] Sweeping manual ColourGains with AWB OFF...")
         try:
@@ -159,13 +183,20 @@ def main():
                 print("[warn] Capture failed for gains", g)
                 continue
             bgr_m = to_bgr(rgb_m)
-            fname = f"manual_g{g[0]:.1f}_{g[1]:.1f}.png".replace(".", "p")
+
+            # filename with sanitized gains, proper .png extension
+            g0 = f"{g[0]:.1f}".replace(".", "p")
+            g1 = f"{g[1]:.1f}".replace(".", "p")
+            fname = f"manual_g{g0}_{g1}.png"
             fpath = os.path.join(outdir, fname)
+
             save_png_bgr(fpath, bgr_m)
             st = stats_rgb(rgb_m)
             vd = verdict_from_stats(st)
-            print("[MANUAL] gains=%s -> means RGB [%.1f, %.1f, %.1f] | %s | saved %s"
-                  % (g, st["means_rgb"][0], st["means_rgb"][1], st["means_rgb"][2], vd, fpath))
+            print(
+                "[MANUAL] gains=%s -> means RGB [%.1f, %.1f, %.1f] | %s | saved %s"
+                % (g, st["means_rgb"][0], st["means_rgb"][1], st["means_rgb"][2], vd, fpath)
+            )
             files.append(fname)
             sweep.append({"gains": g, "stats": st, "verdict": vd, "file": fname})
         summary["manual_sweep"] = sweep
@@ -179,7 +210,7 @@ def main():
     # Close camera cleanly
     picam2.stop()
 
-    # Write summaries
+    # === Write summaries ===
     with open(os.path.join(outdir, "summary.json"), "w") as f:
         json.dump(summary, f, indent=2)
     with open(os.path.join(outdir, "summary.txt"), "w") as f:
@@ -194,12 +225,19 @@ def main():
         if "manual_sweep" in summary:
             f.write("[MANUAL SWEEP] (AWB OFF)\n")
             for item in summary["manual_sweep"]:
-                r,g,b = item["stats"]["means_rgb"]
-                f.write("gains=%s -> means RGB [%.1f, %.1f, %.1f] | %s | %s\n" %
-                        (item["gains"], r, g, b, item["verdict"], item["file"]))
-        f.write("\nNotes:\n- If auto_bgr.png looks normal but your app is blue, convert RGB→BGR before OpenCV display/encode.\n")
+                r, g, b = item["stats"]["means_rgb"]
+                f.write(
+                    "gains=%s -> means RGB [%.1f, %.1f, %.1f] | %s | %s\n"
+                    % (item["gains"], r, g, b, item["verdict"], item["file"])
+                )
+        f.write(
+            "\nNotes:\n"
+            "- If auto_bgr.png looks normal but your app is blue, convert RGB→BGR before OpenCV display/encode.\n"
+            "- If everything is blue even in AUTO, keep AWB ON in your app or adjust gains.\n"
+        )
 
     print(f"\n[done] Wrote {len(files)} image(s). See {outdir}/summary.txt")
+
 
 if __name__ == "__main__":
     main()

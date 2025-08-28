@@ -1,29 +1,24 @@
 #!/usr/bin/env python3
 from picamera2 import Picamera2
-import cv2
 import time
 
-def take_picture(filename="test.jpg"):
+def take_picture(filename="picture.jpg"):
+    """Take a standard picture with the camera without any frame alteration."""
     picam2 = Picamera2()
-    config = picam2.create_preview_configuration(
-        main={"size": (1280, 720), "format": "RGB888"}
-    )
+    
+    # Use still configuration for best quality
+    config = picam2.create_still_configuration()
     picam2.configure(config)
     picam2.start()
-    time.sleep(0.5)  # give the camera time to adjust
-
-    # Capture RGB frame
-    frame_rgb = picam2.capture_array()
+    
+    # Give camera time to adjust exposure and focus
+    time.sleep(2)
+    
+    # Capture and save the image directly
+    picam2.capture_file(filename)
     picam2.stop()
-
-    if frame_rgb is None:
-        print("❌ Failed to capture image")
-        return
-
-    # Convert RGB → BGR for OpenCV before saving
-    frame_bgr = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)
-    cv2.imwrite(filename, frame_bgr)
-    print(f"✅ Saved picture as {filename}")
+    
+    print(f"✅ Picture saved as {filename}")
 
 if __name__ == "__main__":
-    take_picture("test.jpg")
+    take_picture("picture.jpg")

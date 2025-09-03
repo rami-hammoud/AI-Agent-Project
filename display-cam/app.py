@@ -30,7 +30,16 @@ try:
     picam2.set_controls({"AfTrigger": controls.AfTrigger.Start})
 except Exception:
     pass  # ok on non-CM3 sensors
+    # Save a static image to serve on the webpage
+    STATIC_IMAGE_PATH = "static_lara.jpg"
+    if not os.path.exists(STATIC_IMAGE_PATH):
+        frame = picam2.capture_array()
+        bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(STATIC_IMAGE_PATH, bgr)
 
+    @app.route("/lara")
+    def lara_image():
+        return send_file(STATIC_IMAGE_PATH, mimetype="image/jpeg")
 HTML = """
 <!doctype html>
 <html>

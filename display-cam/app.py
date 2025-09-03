@@ -1,3 +1,45 @@
+#!/usr/bin/env python3
+# Display Cam: localhost web viewer for Raspberry Pi Camera Module 3
+# Open http://localhost:8000
+
+import time
+from flask import Flask, Response, render_template_string, send_file
+from picamera2 import Picamera2
+import cv2
+import os
+from io import BytesIO
+
+app = Flask(__name__)
+
+# --- Camera setup ---
+picam2 = Picamera2()
+CONFIG = picam2.create_preview_configuration(
+    main={"size": (1280, 720), "format": "RGB888"}  # tweak resolution if you want
+)
+picam2.configure(CONFIG)
+picam2.start()
+time.sleep(0.3)  # warm-up
+
+# Enable continuous AF on Camera Module 3 (IMX708)
+try:
+    from libcamera import controls
+    picam2.set_controls({
+        "AfMode": controls.AfModeEnum.Continuous,
+        "AfSpeed": controls.AfSpeedEnum.Fast
+    })
+    picam2.set_controls({"AfTrigger": controls.AfTrigger.Start})
+except Exception:
+    pass  # ok on non-CM3 sensors
+    # Save a static image to serve on the webpage
+    STATIC_IMAGE_PATH = "static_lara.jpg"
+    if not os.path.exists(STATIC_IMAGE_PATH):
+        frame = picam2.capture_array()
+        bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(STATIC_IMAGE_PATH, bgr)
+
+    @app.route("/lara")
+    def lara_image():
+        return send_file(STATIC_IMAGE_PATH, mimetype="image/jpeg")
 HTML = """
 <!doctype html>
 <html>
@@ -50,3 +92,41 @@ HTML = """
   </body>
 </html>
 """
+
+
+@app.route("/")
+def index():
+    return render_template_string(HTML)
+
+def mjpeg_generator(jpeg_quality=80):
+    while True:
+        frame = picam2.capture_array()
+        bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        ok, jpg = cv2.imencode(".jpg", bgr, [int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality])
+        if not ok:
+            continue
+        yield (b"--frame\r\n"
+               b"Content-Type: image/jpeg\r\n\r\n" + jpg.tobytes() + b"\r\n")
+
+@app.route("/stream")
+def stream():
+    return Response(mjpeg_generator(),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
+
+@app.route("/snapshot")
+def snapshot():
+    # fast single capture without stopping stream
+    frame = picam2.capture_array()
+    bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    ok, jpg = cv2.imencode(".jpg", bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+    bio = BytesIO(jpg.tobytes())
+    bio.seek(0)
+    return send_file(bio, mimetype="image/jpeg", download_name="snapshot.jpg")
+
+@app.route("/healthz")
+def healthz():
+    return "ok", 200
+
+if __name__ == "__main__":
+    # localhost only; switch to 0.0.0.0 to view from other devices on your LAN
+    app.run(host="0.0.0.0", port=8000, threaded=True)

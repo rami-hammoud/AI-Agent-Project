@@ -101,4 +101,4 @@ def healthz():
 
 if __name__ == "__main__":
     # localhost only; switch to 0.0.0.0 to view from other devices on your LAN
-    app.run(host="127.0.0.1", port=8000, threaded=True)
+    app.run(host="0.0.0.0", port=8000, threaded=True)
